@@ -171,7 +171,7 @@ POST	/analyze_text	Detect text emotion
 🌐 Deploy on VPS (Ubuntu)
 
 Install dependencies:
-
+```
 sudo apt update
 sudo apt install python3 python3-pip python3-venv nginx ffmpeg tesseract-ocr -y
 
@@ -180,13 +180,13 @@ pip install gunicorn
 pm2 start "gunicorn -b 0.0.0.0:5000 app:app"
 pm2 startup
 pm2 save
-
+```
 Configure Nginx
+```
 sudo nano /etc/nginx/sites-enabled/emotion.conf
-
-
+```
 Add:
-
+```
 server {
     listen 80;
     server_name yourdomain.com;
@@ -198,12 +198,12 @@ server {
     }
 }
 
-
+```
 Restart Nginx:
-
+```
 sudo systemctl restart nginx
 
-
+```
 
 
 
