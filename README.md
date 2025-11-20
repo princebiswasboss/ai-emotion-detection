@@ -108,33 +108,36 @@ Note: json is not included because it is built-in.
 
 4️⃣ Install Tesseract OCR (Important)
 Ubuntu/Debian:
+```
 sudo apt install tesseract-ocr
 sudo apt install ffmpeg
-
+```
 Windows:
 
 Download & Install Tesseract:
+```
 https://github.com/UB-Mannheim/tesseract/wiki
-
+```
 5️⃣ Run the App
+```
 python app.py
-
+```
 6️⃣ Open in Browser
-
+```
 Local access:
-
+```
 http://localhost:5000
 
-
+```
 Mobile access (same WiFi):
 
 http://YOUR_LOCAL_IP:5000
 
-
+```
 Public access:
 
 http://YOUR_SERVER_IP:5000
-
+```
 📁 Project Structure
 Flex-Emotion-Detection/
 │── app.py
@@ -146,7 +149,7 @@ Flex-Emotion-Detection/
       ├── css/
       ├── js/
       └── images/
-
+```
 🔐 API Routes
 🧑‍💻 Authentication
 Method	Route	Description
