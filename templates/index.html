@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Emotion Detection Hub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="theme-color" content="#4dd0e1" />
+
+    <style>
+/* --- EXISTING STYLES (Kept mostly same) --- */
+:root {
+    --lm-bg-start: #e0f7fa; --lm-bg-end: #b2ebf2; --lm-text: #1a237e;
+    --lm-card-bg: #ffffff; --lm-button: #00bcd4; --lm-hover: #4dd0e1;
+    --lm-shadow: rgba(0, 188, 212, 0.2); --lm-footer-text: #666;
+    --modal-bg-gradient: linear-gradient(135deg, #ff9a8b 0%, #ff6a88 55%, #ff3e67 100%);
+    --modal-shadow: rgba(255, 62, 103, 0.7); --modal-text: white; --modal-accent: #ffecb3;
+}
+.dark-mode {
+    --dm-bg: #121212; --dm-text: #e0f7fa; --dm-card-bg: #1e1e1e;
+    --dm-button: #ff5722; --dm-hover: #ff7043; --dm-shadow: rgba(255, 87, 34, 0.3);
+    --dm-footer-text: #b0b0b0;
+    --modal-bg-gradient: linear-gradient(135deg, #901be3 0%, #7c4dff 55%, #4b0082 100%);
+    --modal-shadow: rgba(199, 13, 13, 0.7); --modal-text: #e6e6fa; --modal-accent: #ff3b18;
+}
+
+body { margin: 0; font-family: 'Poppins', sans-serif; min-height: 100vh; display: flex; flex-direction: column; color: var(--lm-text); transition: background-color 0.4s ease, color 0.4s ease; }
+.dark-mode { color: var(--dm-text); background-color: var(--dm-bg); background: var(--dm-bg); }
+.centerBox { text-align: center; padding: 20px; flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.title { font-weight: 700; margin-top: 50px; margin-bottom: 30px; text-align: center; font-size: 2.2rem; }
+button { font-family: 'Poppins', sans-serif; font-weight: 600; border: none; padding: 12px 24px; border-radius: 10px; cursor: pointer; transition: all 0.3s ease; text-transform: uppercase; letter-spacing: 0.5px; box-shadow: 0 4px 10px var(--lm-shadow); }
+button:hover { transform: translateY(-2px); box-shadow: 0 6px 15px var(--lm-shadow); }
+button:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+.bigBtn { padding: 18px 40px; font-size: 1.6rem; border-radius: 15px; margin-top: 20px; }
+textarea, input[type="file"], input[type="text"], input[type="email"], input[type="password"], input[type="number"] { width: 90%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box; font-family: inherit; font-size: 1rem; }
+.light-mode { background: linear-gradient(135deg, var(--lm-bg-start) 0%, var(--lm-bg-end) 100%); color: var(--lm-text); }
+.light-mode .card, .auth-box { background: var(--lm-card-bg); box-shadow: 0 10px 30px var(--lm-shadow); border: 1px solid var(--lm-bg-end); }
+.light-mode button:not(#themeToggle) { background: var(--lm-button); color: #fff; }
+.light-mode button:hover:not(#themeToggle) { background: var(--lm-hover); }
+.dark-mode button:not(#themeToggle) { background: var(--dm-button); color: #fff; box-shadow: 0 4px 10px var(--dm-shadow); }
+.dark-mode button:hover:not(#themeToggle) { background: var(--dm-hover); box-shadow: 0 6px 15px var(--dm-shadow); }
+.dark-mode .card, .auth-box { background: var(--dm-card-bg); border: 1px solid #333; box-shadow: 0 10px 30px var(--dm-shadow); }
+.dark-mode input, .dark-mode textarea { background: #333; color: #f0f0f0; border-color: #555; }
+
+.card { max-width: 400px; width: 90%; margin: 20px auto; padding: 30px; border-radius: 18px; text-align: center; transition: all 0.4s ease; position: relative; }
+.card:hover { transform: scale(1.02); }
+.result { margin-top: 25px; padding: 15px; border-radius: 10px; font-size: 1.1rem; font-weight: 600; }
+#video { width: 100%; max-height: 250px; background: #000; border-radius: 10px; margin-bottom: 15px; object-fit: cover; }
+.rotated-video { transform: rotateY(180deg); }
+.preview { max-width: 100%; max-height: 150px; object-fit: contain; margin: 15px 0; border: 1px dashed #aaa; }
+.homeBtn { position: absolute; top: 15px; left: 15px; padding: 8px 15px; font-size: 0.8rem; z-index: 10; }
+#selectScreen button { width: 80%; max-width: 300px; margin: 10px 0; padding: 15px 20px; font-size: 1.1rem; }
+#themeToggle { position: fixed; bottom: 25px; right: 25px; width: 200px; height: 50px; font-size: 20px; background: rgba(255,255,255,0.3); backdrop-filter: blur(5px); border-radius: 20px; z-index: 100; border: 1px solid rgba(255,255,255,0.5); }
+
+/* --- AUTH STYLES --- */
+.auth-container { width: 100%; display: flex; justify-content: center; align-items: center; flex-grow: 1; }
+.auth-box { width: 350px; padding: 30px; border-radius: 20px; text-align: center; }
+.auth-box h2 { margin-bottom: 20px; }
+.toggle-link { margin-top: 15px; font-size: 0.9rem; cursor: pointer; text-decoration: underline; display: block; }
+.error-msg { color: red; font-size: 0.9rem; margin-bottom: 10px; display: none; }
+.user-display { position: absolute; top: 20px; right: 20px; font-weight: bold; display: flex; align-items: center; gap: 10px; }
+.logout-btn { font-size: 0.8rem; padding: 5px 10px; }
+
+/* Modal Styles (Same as before) */
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center; z-index: 2000; }
+.modal-content { background: var(--modal-bg-gradient); color: var(--modal-text); padding: 40px; border-radius: 25px; box-shadow: 0 10px 40px var(--modal-shadow), 0 0 20px rgba(255,255,255,0.8) inset; width: 450px; text-align: center; position: relative; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+@keyframes popIn { 0% { transform: scale(0.5) translateY(-50px); opacity: 0; } 100% { transform: scale(1) translateY(0); opacity: 1; } }
+.party-emotion { font-size: 3.5rem; font-weight: 900; margin: 10px 0; text-transform: uppercase; color: var(--modal-accent); text-shadow: 2px 2px 5px rgba(0,0,0,0.5); animation: pulse 1.5s infinite alternate; }
+@keyframes pulse { 0% { transform: scale(1); } 100% { transform: scale(1.05); text-shadow: 0 0 15px var(--modal-accent); } }
+.close-btn { position: absolute; top: 15px; right: 25px; font-size: 30px; cursor: pointer; }
+
+/* Dynamic Emotion Themes */
+.emotion-happy { --modal-bg-gradient: linear-gradient(135deg, #ffeb3b 0%, #ffc107 100%); --modal-shadow: rgba(255,193,7,0.8); --modal-text: #333; --modal-accent: #f44336; }
+.emotion-sad { --modal-bg-gradient: linear-gradient(135deg, #2196f3 0%, #0d47a1 100%); --modal-shadow: rgba(33,150,243,0.7); --modal-text: white; --modal-accent: #bbdefb; }
+.emotion-angry { --modal-bg-gradient: linear-gradient(135deg, #e53935 0%, #b71c1c 100%); --modal-shadow: rgba(229,57,53,0.8); --modal-text: white; --modal-accent: #ffccbc; }
+.emotion-calm { --modal-bg-gradient: linear-gradient(135deg, #4caf50 0%, #1b5e20 100%); --modal-shadow: rgba(76,175,80,0.7); --modal-text: white; --modal-accent: #e8f5e9; }
+.emotion-surprise { --modal-bg-gradient: linear-gradient(135deg, #9c27b0 0%, #673ab7 100%); --modal-shadow: rgba(156,39,176,0.7); --modal-text: white; --modal-accent: #e1bee7; }
+
+.footer-text { text-align: center; padding: 10px; font-size: 0.85rem; color: var(--lm-footer-text); }
+.dark-mode .footer-text { color: var(--dm-footer-text); }
+    </style>
+</head>
+<body class="light-mode">
+
+<div id="resultModal" class="modal-overlay" style="display:none;">
+    <div class="modal-content">
+        <span class="close-btn">&times;</span>
+        <div class="modal-header">Analysis Result</div>
+        <div class="modal-body">
+            <p>Your detected emotion is:</p>
+            <h1 id="partyEmotion" class="party-emotion">LOADING...</h1>
+        </div>
+    </div>
+</div>
+
+<button id="themeToggle"> </button>
+
+<h1 class="title">Emotion Detection Hub</h1>
+
+<div id="authScreen" class="auth-container" style="display: {% if user %}none{% else %}flex{% endif %};">
+    
+    <div id="loginBox" class="auth-box">
+        <h2>Login</h2>
+        <div id="loginError" class="error-msg"></div>
+        <input type="text" id="loginId" placeholder="Email or Mobile Number">
+        <input type="password" id="loginPass" placeholder="Password">
+        <button id="loginBtn" style="width:100%; margin-top:10px;">Login</button>
+        <span class="toggle-link" onclick="showRegister()">Don't have an account? Sign Up</span>
+    </div>
+
+    <div id="registerBox" class="auth-box" style="display:none;">
+        <h2>Register</h2>
+        <div id="regError" class="error-msg"></div>
+        <input type="text" id="regName" placeholder="Full Name">
+        <input type="email" id="regEmail" placeholder="Email Address">
+        <input type="number" id="regMobile" placeholder="Mobile Number">
+        <input type="password" id="regPass" placeholder="Create Password">
+        <button id="regBtn" style="width:100%; margin-top:10px;">Sign Up</button>
+        <span class="toggle-link" onclick="showLogin()">Already have an account? Login</span>
+    </div>
+</div>
+
+{% if user %}
+<div class="user-display">
+    <span>Welcome, {{ user }}</span>
+    <a href="/logout"><button class="logout-btn">Logout</button></a>
+</div>
+{% endif %}
+
+<div id="mainAppArea" style="display: {% if user %}block{% else %}none{% endif %}; width: 100%;">
+    
+    <div id="startScreen" class="centerBox">
+        <button id="startBtn" class="bigBtn">LAUNCH APP</button>
+    </div>
+
+    <div id="selectScreen" class="centerBox" style="display:none;">
+        <h2>Select Detection Type</h2>
+        <button class="selectBtn" data-target="faceCard">Face (Webcam)</button>
+        <button class="selectBtn" data-target="handCard">Handwriting</button>
+        <button class="selectBtn" data-target="audioCard">Audio</button>
+        <button class="selectBtn" data-target="textCard">Text Emotion</button>
+    </div>
+
+    <div id="cardsContainer" style="display:none;">
+        <div class="card" id="faceCard" style="display:none;">
+            <button class="homeBtn">Back</button>
+            <h2>Face (Webcam)</h2>
+            <video id="video" autoplay playsinline></video>
+            <div class="controls">
+                <button id="toggleCam">Start Camera</button>
+                <button id="rotateVideo">Rotate</button> <button id="snapBtn" disabled>Analyze</button>
+            </div>
+            <div class="result">Emotion: <span id="faceEmotion">—</span></div>
+        </div>
+
+        <div class="card" id="handCard" style="display:none;">
+            <button class="homeBtn">Back</button>
+            <h2>Handwriting</h2>
+            <input type="file" id="handFile" accept="image/*">
+            <button id="uploadHand" disabled>Analyze</button>
+            <img id="handPreview" class="preview" style="display:none;">
+            <div class="result"><p>Text: <span id="textOut">—</span></p><p>Emotion: <span id="handEmotion">—</span></p></div>
+        </div>
+
+        <div class="card" id="audioCard" style="display:none;">
+            <button class="homeBtn">Back</button>
+            <h2>Audio Emotion</h2>
+            <button id="recBtn">Start Recording (3s)</button>
+            <audio id="playback" controls style="width: 100%; margin: 15px 0; display: none;"></audio>
+            <div class="result">Status: <span id="audioStatus">Ready</span></div>
+            <div class="result">Emotion: <span id="audioEmotion">—</span></div>
+        </div>
+
+        <div class="card" id="textCard" style="display:none;">
+            <button class="homeBtn">Back</button>
+            <h2>Text Emotion</h2>
+            <textarea id="textInput" placeholder="Type your text here..." rows="4"></textarea>
+            <button id="analyzeTextBtn">Analyze</button>
+            <div class="result">Emotion: <span id="textEmotion">—</span></div>
+        </div>
+    </div>
+</div>
+
+<p class="footer-text">Developed By <a href="http://develophunt.in/prince" target="_blank">PRINCE</a></p>
+
+<script>
+/* --- GLOBAL & NAV --- */
+const startBtn = document.getElementById("startBtn");
+const startScreen = document.getElementById("startScreen");
+const selectScreen = document.getElementById("selectScreen");
+const cardsContainer = document.getElementById("cardsContainer");
+const themeToggle = document.getElementById("themeToggle");
+const mainAppArea = document.getElementById("mainAppArea");
+const authScreen = document.getElementById("authScreen");
+
+// Theme Logic
+function applyTheme(isDarkMode) {
+    document.body.classList.toggle("dark-mode", isDarkMode);
+    document.body.classList.toggle("light-mode", !isDarkMode);
+    themeToggle.textContent = isDarkMode ? "Light" : "Dark";
+    localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+}
+document.addEventListener('DOMContentLoaded', () => {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) applyTheme(savedTheme === 'dark');
+});
+themeToggle.onclick = () => applyTheme(!document.body.classList.contains("dark-mode"));
+
+// --- AUTHENTICATION LOGIC ---
+function showRegister() {
+    document.getElementById('loginBox').style.display = 'none';
+    document.getElementById('registerBox').style.display = 'block';
+}
+function showLogin() {
+    document.getElementById('registerBox').style.display = 'none';
+    document.getElementById('loginBox').style.display = 'block';
+}
+
+// Register Fetch
+document.getElementById('regBtn').onclick = async () => {
+    const name = document.getElementById('regName').value;
+    const email = document.getElementById('regEmail').value;
+    const mobile = document.getElementById('regMobile').value;
+    const password = document.getElementById('regPass').value;
+    const errBox = document.getElementById('regError');
+
+    if(!name || !email || !mobile || !password) {
+        errBox.innerText = "All fields are required.";
+        errBox.style.display = "block";
+        return;
+    }
+
+    try {
+        const res = await fetch('/register', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ name, email, mobile, password })
+        });
+        const data = await res.json();
+        
+        if(data.success) {
+            alert(data.message);
+            showLogin();
+            errBox.style.display = 'none';
+        } else {
+            errBox.innerText = data.message;
+            errBox.style.display = 'block';
+        }
+    } catch (e) { console.error(e); }
+};
+
+// Login Fetch
+document.getElementById('loginBtn').onclick = async () => {
+    const identifier = document.getElementById('loginId').value;
+    const password = document.getElementById('loginPass').value;
+    const errBox = document.getElementById('loginError');
+
+    try {
+        const res = await fetch('/login', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ identifier, password })
+        });
+        const data = await res.json();
+
+        if(data.success) {
+            window.location.reload(); // Reload to update session state in Template
+        } else {
+            errBox.innerText = data.message;
+            errBox.style.display = 'block';
+        }
+    } catch (e) { console.error(e); }
+};
+
+
+/* --- APP NAVIGATION --- */
+function navigate(viewName, cardId = null) {
+    // Ensure we stop resources when switching
+    if (stream) stopCamera();
+    
+    startScreen.style.display = "none";
+    selectScreen.style.display = "none";
+    cardsContainer.style.display = "none";
+    document.querySelectorAll(".card").forEach(c => c.style.display = "none");
+
+    if (viewName === 'start') startScreen.style.display = "flex";
+    else if (viewName === 'select') selectScreen.style.display = "flex";
+    else if (viewName === 'card' && cardId) {
+        cardsContainer.style.display = "block";
+        document.getElementById(cardId).style.display = "block";
+    }
+}
+
+startBtn.onclick = () => navigate('select');
+document.querySelectorAll(".selectBtn").forEach(btn => {
+    btn.onclick = () => navigate('card', btn.dataset.target);
+});
+document.querySelectorAll(".homeBtn").forEach(btn => {
+    btn.onclick = () => navigate('select');
+});
+
+/* --- MODAL LOGIC --- */
+const resultModal = document.getElementById("resultModal");
+const partyEmotion = document.getElementById("partyEmotion");
+const closeBtn = document.querySelector(".close-btn");
+
+function getEmotionClass(emotion) {
+    const norm = emotion.toLowerCase();
+    if (norm.includes('happy') || norm.includes('joy')) return 'emotion-happy';
+    if (norm.includes('sad') || norm.includes('stress')) return 'emotion-sad';
+    if (norm.includes('angry') || norm.includes('fear')) return 'emotion-angry';
+    if (norm.includes('calm') || norm.includes('neutral')) return 'emotion-calm';
+    if (norm.includes('surprise')) return 'emotion-surprise';
+    return '';
+}
+
+function showResultModal(emotionText, spanElement) {
+    if(spanElement) spanElement.innerText = emotionText;
+    const modalContent = document.querySelector(".modal-content");
+    modalContent.className = "modal-content " + getEmotionClass(emotionText);
+    partyEmotion.innerText = emotionText;
+    resultModal.style.display = "flex";
+}
+closeBtn.onclick = () => resultModal.style.display = "none";
+resultModal.onclick = (e) => { if (e.target === resultModal) resultModal.style.display = "none"; };
+
+
+/* --- 1. FACE CAM LOGIC --- */
+const video = document.getElementById("video");
+const toggleCam = document.getElementById("toggleCam");
+const snapBtn = document.getElementById("snapBtn");
+const rotateVideo = document.getElementById("rotateVideo");
+let stream = null;
+
+async function startCamera() {
+    try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false });
+        video.srcObject = stream;
+        toggleCam.innerText = "Stop Camera";
+        snapBtn.disabled = false;
+    } catch (err) { alert("Camera Error"); }
+}
+function stopCamera() {
+    if (!stream) return;
+    stream.getTracks().forEach(track => track.stop());
+    video.srcObject = null;
+    stream = null;
+    toggleCam.innerText = "Start Camera";
+    snapBtn.disabled = true;
+}
+toggleCam.onclick = () => stream ? stopCamera() : startCamera();
+rotateVideo.onclick = () => video.classList.toggle('rotated-video');
+
+snapBtn.onclick = () => {
+    if (!stream) return;
+    let canvas = document.createElement("canvas");
+    canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+    let ctx = canvas.getContext("2d");
+    if (video.classList.contains('rotated-video')) {
+        ctx.save(); ctx.scale(-1, 1); ctx.drawImage(video, -canvas.width, 0); ctx.restore();
+    } else ctx.drawImage(video, 0, 0);
+    
+    canvas.toBlob(async (blob) => {
+        let fd = new FormData(); fd.append("frame", blob);
+        try {
+            const r = await fetch("/analyze_face", { method: "POST", body: fd });
+            const j = await r.json();
+            showResultModal(j.emotion, document.getElementById("faceEmotion"));
+        } catch(e) { console.log(e); }
+    }, "image/png");
+};
+
+/* --- 2. HANDWRITING LOGIC --- */
+const handFile = document.getElementById("handFile");
+const handPreview = document.getElementById("handPreview");
+const uploadHand = document.getElementById("uploadHand");
+
+handFile.onchange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+        handPreview.src = URL.createObjectURL(file);
+        handPreview.style.display = 'block';
+        uploadHand.disabled = false;
+    }
+};
+uploadHand.onclick = async () => {
+    let fd = new FormData(); fd.append("hand", handFile.files[0]);
+    const r = await fetch("/analyze_handwriting", { method: "POST", body: fd });
+    const j = await r.json();
+    document.getElementById("textOut").innerText = j.text;
+    showResultModal(j.emotion, document.getElementById("handEmotion"));
+};
+
+/* --- 3. AUDIO LOGIC --- */
+const recBtn = document.getElementById("recBtn");
+const playback = document.getElementById("playback");
+let mediaRecorder; let audioChunks = [];
+
+recBtn.onclick = async () => {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    mediaRecorder = new MediaRecorder(stream);
+    audioChunks = [];
+    mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+    mediaRecorder.onstop = async () => {
+        const blob = new Blob(audioChunks, { type: 'audio/webm' });
+        playback.src = URL.createObjectURL(blob); playback.style.display = 'block';
+        let fd = new FormData(); fd.append("audio", blob);
+        const r = await fetch("/analyze_audio", { method: "POST", body: fd });
+        const j = await r.json();
+        showResultModal(j.emotion, document.getElementById("audioEmotion"));
+        recBtn.innerText = "Start Recording"; recBtn.disabled = false;
+    };
+    mediaRecorder.start();
+    recBtn.innerText = "Recording... (3s)"; recBtn.disabled = true;
+    setTimeout(() => mediaRecorder.stop(), 3000);
+};
+
+/* --- 4. TEXT LOGIC --- */
+document.getElementById("analyzeTextBtn").onclick = async () => {
+    const text = document.getElementById("textInput").value;
+    const r = await fetch("/analyze_text", {
+        method: "POST",
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ text: text })
+    });
+    const j = await r.json();
+    showResultModal(j.emotion, document.getElementById("textEmotion"));
+};
+</script>
+
+</body>
+</html>
