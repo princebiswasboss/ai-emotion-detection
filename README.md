@@ -62,9 +62,7 @@ Follow these steps to install and run the project.
 ```bash
 git clone https://github.com/YOUR_USERNAME/Flex-Emotion-Detection.git
 cd Flex-Emotion-Detection
-
-
-
+```
 
 
 
@@ -73,20 +71,23 @@ cd Flex-Emotion-Detection
 
 Create Virtual Environment (Recommended)
 Windows:
+```
 python -m venv venv
 venv\Scripts\activate
-
+```
 Linux / Mac:
+```
 python3 -m venv venv
 source venv/bin/activate
-
+```
 3️⃣ Install Dependencies
 
 Install all required modules using:
-
+```
 pip install -r requirements.txt
-
+```
 📦 requirements.txt (Included)
+```
 Flask
 deepface
 pillow
@@ -101,7 +102,7 @@ tf-keras
 protobuf==3.20.*
 sentencepiece
 requests
-
+```
 
 Note: json is not included because it is built-in.
 
