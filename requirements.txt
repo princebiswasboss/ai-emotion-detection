@@ -1,0 +1,15 @@
+Flask
+deepface
+pillow
+numpy
+pytesseract
+transformers
+torch
+librosa
+soundfile
+opencv-python
+tf-keras
+protobuf==3.20.*
+sentencepiece
+json
+requests
